@@ -31,3 +31,5 @@ Your first task is to visualize an earthquake dataset. Complete the following st
 - Create a legend that will provide context for your map data.
 
 - Your visualization should look something like the preceding map.
+
+Utilized Xpert Learning Assistant and Chat GPT for assistance in coding and resolving errors.
