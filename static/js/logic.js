@@ -1,7 +1,7 @@
 //Initialize map and set view
 let myMap = L.map("map", {
-    center: [0, 0],
-    zoom: 2
+    center: [39.5, -8],
+    zoom: 2.5,
 });
 
 // Adding the tile layer
@@ -19,7 +19,7 @@ d3.json(url).then(function(response) {
 
     //Define marker size by magnitude
     function markerSize(mag) {
-      return Math.sqrt(mag) * 50000;
+      return Math.sqrt(mag) * 75000;
     }
 
     //Define marker color by depth
@@ -32,10 +32,54 @@ d3.json(url).then(function(response) {
                             "green"; 
     }
 
-    for (let i = 0; i < features.length; i++) {
-        let location = features[i].geometry;
-        if (location) {
-        //console.log(location);
-        earthquakesArray.push([location.coordinates[1], location.coordinates[0]]);
+    //Iterate through earthquake features and add circle markers to the map
+    features.forEach(function(feature) {
+        let coordinates = feature.geometry.coordinates;
+        let magnitude = feature.properties.mag;
+        let depth = coordinates[2];
+
+        //Add circle marker to map
+        L.circle([coordinates[1], coordinates[0]], {
+            radius: markerSize(magnitude),
+            color: "black",
+            weight: 1,
+            fillColor: markerColor(depth),
+            fillOpacity: 0.7
+        }).addTo(myMap)
+        .bindPopup(`<h3>${feature.properties.place}</h3><hr><p>Magnitude: ${magnitude}</p><p>Depth: ${depth} km</p>`);
+    });
+
+    //Add legend to the map
+    let legend = L.control({ position: "bottomright"});
+
+    legend.onAdd = function(map) {
+        let div = L.DomUtil.create("div", "info legend");
+
+        //Add white legend box
+        div.style.backgroundColor = "white";
+        div.style.padding = "10px";
+        div.style.borderRadius = "5px";
+
+        let depths = [0, 10, 30, 50, 70, 90];
+        let colors = [
+            "green",
+            "yellowgreen",
+            "lightsalmon",
+            "orange",
+            "darkorange",
+            "red"
+        ];
+        
+        //Loop through depths to generate labels with colored squares
+        for (let i = 0; i < depths.length; i++) {
+            div.innerHTML +=
+                `<div style="display: flex; align-items: center;">
+                    <div style="width: 18px; height: 18px; background:${colors[i]}; margin-right: 8px;"></div>
+                    <span>${depths[i]}${depths[i + 1] ? '&ndash;' + depths[i + 1] : '+'}</span>
+                </div>`;
         }
-    }
+        return div;
+    };
+    //Add legend to map
+    legend.addTo(myMap);
+});
